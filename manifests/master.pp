@@ -150,6 +150,9 @@ class puppet::master (
   }
 
   if $storeconfigs {
+    #Some fixes/hacks to fix ordering for puppetdb
+    Exec['Certificate_Check'] -> Package['puppetdb']
+
     Anchor['puppet::master::begin'] ->
     class { 'puppet::storeconfigs':
       dbserver                  => $storeconfigs_dbserver,
