@@ -45,7 +45,7 @@ if ! defined(Class['puppetdb::master::config']) {
         restart_puppet           => false,
         notify                   => $puppet_service,
         puppetdb_startup_timeout => $puppetdb_startup_timeout,
-        require                  => Class['puppetdb'],
+        require                  => [Service['httpd'], Class['puppetdb']],
       }
   }
 }
