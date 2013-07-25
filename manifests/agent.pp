@@ -92,6 +92,7 @@ class puppet::agent(
       owner   => $::puppet::params::puppet_user,
       group   => $::puppet::params::puppet_group,
       notify  => Service[$puppet_agent_service],
+      mode    => '0655',
     }
   }
 
@@ -128,6 +129,9 @@ class puppet::agent(
         hour    => '*',
         minute  => [ $time1, $time2 ],
       }
+    }
+    # Run Puppet through external tooling, like MCollective
+    external: {
     }
     default: {
       err 'Unsupported puppet run style in Class[\'puppet::agent\']'
