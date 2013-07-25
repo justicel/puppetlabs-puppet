@@ -1,22 +1,24 @@
 require 'spec_helper'
 
 describe 'puppet::passenger', :type => :class do
-        let (:params) do
+      let (:params) do
             {
-                :puppet_passenger_port => '8140',
-                :puppet_docroot        => '/etc/puppet/rack/public/',
-                :apache_serveradmin    => 'root', 
-                :puppet_conf           => '/etc/puppet/puppet.conf',
-                :puppet_ssldir         => '/var/lib/puppet/ssl',
-                :certname              => 'test.test.com',
-                :conf_dir              => '/etc/puppet'
+                :puppet_passenger_port  => '8140',
+                :puppet_docroot         => '/etc/puppet/rack/public/',
+                :apache_serveradmin     => 'root',
+                :puppet_conf            => '/etc/puppet/puppet.conf',
+                :puppet_ssldir          => '/var/lib/puppet/ssl',
+                :certname               => 'test.test.com',
+                :conf_dir               => '/etc/puppet',
         }
         end
     context 'on Debian' do
         let(:facts) do
-            { 
-                :osfamily        => 'debian',
-                :operatingsystem => 'debian',
+            {
+                :osfamily               => 'debian',
+                :operatingsystem        => 'debian',
+                :operatingsystemrelease => '5',
+                :concat_basedir         => '/dne',
             }
         end
          it {
@@ -25,7 +27,11 @@ describe 'puppet::passenger', :type => :class do
                 should include_class('apache::mod::passenger')
                 should include_class('apache::mod::ssl')
                 should contain_exec('Certificate_Check').with(
-                    :command => "puppet cert --generate #{params[:certname]} --trace",
+                    :command =>
+                      "puppet cert clean #{params[:certname]} ; " +
+                      "puppet certificate --ca-location=local --dns_alt_names=puppet generate #{params[:certname]}" +
+                      " && puppet cert sign --allow-dns-alt-names #{params[:certname]}" +
+                      " && puppet certificate --ca-location=local find #{params[:certname]}",
                     :unless  => "/bin/ls #{params[:puppet_ssldir]}/certs/#{params[:certname]}.pem",
                     :path    => '/usr/bin:/usr/local/bin',
                     :require  => "File[#{params[:puppet_conf]}]"
@@ -68,14 +74,16 @@ describe 'puppet::passenger', :type => :class do
     end
     context 'on Redhat' do
         let(:facts) do
-            { 
-                :osfamily        => 'Redhat',
-                :operatingsystem => 'Redhat',
+            {
+                :osfamily               => 'Redhat',
+                :operatingsystem        => 'Redhat',
+                :operatingsystemrelease => '5',
+                :concat_basedir         => '/dne',
             }
         end
          it {
-                should contain_file('/etc/httpd/conf.d/passenger.conf')
                 should contain_file('/var/lib/puppet/reports')
+                should contain_file('/var/lib/puppet/ssl/ca/requests')
         }
     end
 end
