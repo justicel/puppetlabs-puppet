@@ -18,6 +18,7 @@
 #   ['pluginsync']            - Whethere to have pluginsync
 #   ['use_srv_records']       - Whethere to use srv records
 #   ['srv_domain']            - Domain to request the srv records
+#   ['ensure']                - Specify if the agent should be stopped/running
 #
 # Actions:
 # - Install and configures the puppet agent
@@ -47,7 +48,8 @@ class puppet::agent(
   $report                 = true,
   $pluginsync             = true,
   $use_srv_records        = false,
-  $srv_domain             = undef
+  $srv_domain             = undef,
+  $ensure                 = running,
 ) inherits puppet::params {
 
   if ! defined(User[$::puppet::params::puppet_user]) {
@@ -100,7 +102,7 @@ class puppet::agent(
     'service': {
           $service_notify = Service[$puppet_agent_service]
           service { $puppet_agent_service:
-            ensure    => true,
+            ensure    => $ensure,
             enable    => true,
             require   => File [$::puppet::params::puppet_conf],
             subscribe => Package[$puppet_agent_package],
