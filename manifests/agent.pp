@@ -50,6 +50,7 @@ class puppet::agent(
   $use_srv_records        = false,
   $srv_domain             = undef,
   $ensure                 = running,
+  $rundir                 = $::puppet::params::rundir,
 ) inherits puppet::params {
 
   if ! defined(User[$::puppet::params::puppet_user]) {
@@ -215,6 +216,12 @@ class puppet::agent(
     ensure  => present,
     setting => 'splay',
     value   => $splay,
+  }
+
+  ini_setting {'puppetagentsrun':
+    ensure  => present,
+    setting => 'rundir',
+    value   => $rundir,
   }
 
   ini_setting {'puppetmasterport':
